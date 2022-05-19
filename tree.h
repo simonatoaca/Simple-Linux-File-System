@@ -1,3 +1,4 @@
+#define LINE_MAX_LEN 1000
 #define TREE_CMD_INDENT_SIZE 4
 #define NO_ARG ""
 #define PARENT_DIR ".."

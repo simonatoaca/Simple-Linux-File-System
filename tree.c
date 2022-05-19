@@ -58,7 +58,18 @@ void ls(TreeNode* currentNode, char* arg) {
 
 
 void pwd(TreeNode* treeNode) {
-    // TODO
+	char path[LINE_MAX_LEN] = "";
+    TreeNode *prev_dir = treeNode;
+
+	while (prev_dir) {
+		char *aux = strdup(path);
+		sprintf(path, "%s/%s", prev_dir->name, aux);
+		prev_dir = prev_dir->parent;
+		free(aux);
+	}
+
+	path[strlen(path) - 1] = '\0';
+	printf("%s", path);
 }
 
 
@@ -73,10 +84,10 @@ TreeNode* cd(TreeNode* currentNode, char* path) {
 			if (!next_dir)	return currentNode;
 		} else {
 			ListNode *child = ll_search(curr_list, next_directory);
-			if (child) {
+			if (child && child->info->type == FOLDER_NODE) {
 				next_dir = child->info;
 			} else {
-				printf("cd: no such file or directory: %s\n", path);
+				printf("cd: no such file or directory: %s", path);
 				return currentNode;
 			}
 		}
@@ -114,8 +125,6 @@ void mkdir(TreeNode* currentNode, char* folderName) {
 		if(info->content)
 			free(info->content);
 		free(info);	
-	} else {
-		ll_print(curr);
 	}
 }
 
