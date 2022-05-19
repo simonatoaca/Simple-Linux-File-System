@@ -50,7 +50,6 @@ void ls(TreeNode* currentNode, char* arg) {
 
 	ListNode *curr = ll_search(curr_list, arg);
 	if(curr) {
-		printf("asta");
 		curr_list = ((FolderContent *)curr->info->content)->children;
 		ll_print(curr_list);
 		return;
@@ -64,7 +63,28 @@ void pwd(TreeNode* treeNode) {
 
 
 TreeNode* cd(TreeNode* currentNode, char* path) {
-    // TODO
+	TreeNode *next_dir = currentNode;
+	List *curr_list = ((FolderContent *)(currentNode->content))->children;
+	char *next_directory = strtok(path, "/");
+
+	while (next_directory) {
+		if (!strcmp(next_directory, PARENT_DIR)) {
+			next_dir = next_dir->parent;
+			if (!next_dir)	return currentNode;
+		} else {
+			ListNode *child = ll_search(curr_list, next_directory);
+			if (child) {
+				next_dir = child->info;
+			} else {
+				printf("cd: no such file or directory: %s\n", path);
+				return currentNode;
+			}
+		}
+		curr_list = ((FolderContent *)next_dir->content)->children;
+		next_directory = strtok(NULL, "/");
+	}
+
+	return next_dir;
 }
 
 
@@ -135,8 +155,6 @@ void touch(TreeNode* currentNode, char* fileName, char* fileContent) {
 		if(info->content)
 			free(info->content);
 		free(info);	
-	} else {
-		ll_print(curr);
 	}
 }
 
