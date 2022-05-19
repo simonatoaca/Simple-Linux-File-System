@@ -54,5 +54,5 @@ void rmrec(TreeNode* currentNode, char* resourceName);
 void touch(TreeNode* currentNode, char* fileName, char* fileContent);
 void cp(TreeNode* currentNode, char* source, char* destination);
 void mv(TreeNode* currentNode, char* source, char* destination);
-FileTree createFileTree();
+FileTree *createFileTree(char* rootFolderName);
 void freeTree(FileTree fileTree);
