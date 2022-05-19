@@ -37,19 +37,19 @@ void freeTree(FileTree fileTree) {
 
 void ls(TreeNode* currentNode, char* arg) {
 
-    if(!currentNode) {
+    if (!currentNode) {
 		fprintf(stderr, "No current node :(");
 		return;
 	}
 
 	List *curr_list = ((FolderContent *)(currentNode->content))->children;
-	if(!strcmp(arg, NO_ARG)) {
+	if (!strcmp(arg, NO_ARG)) {
 		ll_print(curr_list);
 		return;
 	}
 
 	ListNode *curr = ll_search(curr_list, arg);
-	if(curr) {
+	if (curr) {
 		curr_list = ((FolderContent *)curr->info->content)->children;
 		ll_print(curr_list);
 		return;
@@ -95,7 +95,7 @@ void tree(TreeNode* currentNode, char* arg) {
 
 void mkdir(TreeNode* currentNode, char* folderName) {
 
-    if(!currentNode) {
+    if (!currentNode) {
 		fprintf(stderr, "No current node :(");
 		return;
 	}
@@ -109,7 +109,7 @@ void mkdir(TreeNode* currentNode, char* folderName) {
 	((FolderContent *)info->content)->children = ll_create();
 	
 
-	if(!ll_add_node(curr, info)) {
+	if (!ll_add_node(curr, info)) {
 		free(info->name);
 		if(info->content)
 			free(info->content);
@@ -136,7 +136,7 @@ void rmdir(TreeNode* currentNode, char* folderName) {
 
 
 void touch(TreeNode* currentNode, char* fileName, char* fileContent) {
-	if(!currentNode) {
+	if (!currentNode) {
 		fprintf(stderr, "No current node :(");
 		return;
 	}
@@ -146,11 +146,11 @@ void touch(TreeNode* currentNode, char* fileName, char* fileContent) {
 	info->name = strdup(fileName);
 	info->type = FILE_NODE;
 
-	if(fileContent) {
+	if (fileContent) {
 		info->content = strdup(fileContent);
 	}
 
-	if(!ll_add_node(curr, info)) {
+	if (!ll_add_node(curr, info)) {
 		free(info->name);
 		if(info->content)
 			free(info->content);
