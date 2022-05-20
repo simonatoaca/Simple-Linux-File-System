@@ -130,17 +130,68 @@ void mkdir(TreeNode* currentNode, char* folderName) {
 
 
 void rmrec(TreeNode* currentNode, char* resourceName) {
-    // TODO
+    List *list = ((FolderContent *)(currentNode->content))->children;
+    ListNode *removed_node = ll_search(list, resourceName);
+	if (!removed_node) {
+		printf("rmrec: failed to remove '%s': No such file or directory", resourceName);
+		return;
+	}
+	
+	if (removed_node->info->type == FOLDER_NODE) {
+		if (((FolderContent *)(removed_node->info->content))->children->head) {
+			TreeNode *next_node = cd(currentNode, resourceName);
+			List *list = ((FolderContent *)(next_node->content))->children;
+			ll_free(list);
+		}
+
+		rmdir(currentNode, resourceName);
+		return;
+	}
+
+	rm(currentNode, resourceName);
 }
 
 
 void rm(TreeNode* currentNode, char* fileName) {
-    // TODO
+	List *list = ((FolderContent *)(currentNode->content))->children;
+    ListNode *removed_node = ll_search(list, fileName);
+	if (!removed_node) {
+		printf("rm: failed to remove '%s': No such file or directory", fileName);
+		return;
+	}
+
+	if (removed_node->info->type != FILE_NODE) {
+		printf("rm: cannot remove '%s': Is a directory", fileName);
+		return;
+	}
+
+	removed_node = ll_remove_node(list, fileName);
+	free(removed_node->info);
+	free(removed_node);
 }
 
 
 void rmdir(TreeNode* currentNode, char* folderName) {
-    // TODO
+    List *list = ((FolderContent *)(currentNode->content))->children;
+    ListNode *removed_node = ll_search(list, folderName);
+	if (!removed_node) {
+		printf("rmdir: failed to remove '%s': No such file or directory", folderName);
+		return;
+	}
+
+	if (removed_node->info->type != FOLDER_NODE) {
+		printf("rmdir: failed to remove '%s': Not a directory", folderName);
+		return;
+	}
+
+	if (((FolderContent *)(removed_node->info->content))->children->head) {
+		printf("rmdir: failed to remove '%s': Directory not empty", folderName);
+		return;
+	}
+
+	removed_node = ll_remove_node(list, folderName);
+	free(removed_node->info);
+	free(removed_node);
 }
 
 

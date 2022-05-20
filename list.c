@@ -2,7 +2,7 @@
 
 List *ll_create() {
 	List *list = malloc(sizeof(*list));
-	if(!list) {
+	if (!list) {
 		fprintf(stderr, "List malloc failed");
 		return NULL;
 	}
@@ -12,16 +12,16 @@ List *ll_create() {
 
 int ll_add_node(List *list, TreeNode *info) {
 
-	if(!list) {
+	if (!list) {
 		fprintf(stderr, "No list :(");
 		return 0;
 	}
 
-	if(ll_search(list, info->name)) {
+	if (ll_search(list, info->name)) {
 		return 0;
 	}
 
-	if(!list->head) {
+	if (!list->head) {
 		list->head = calloc(1, sizeof(ListNode));
 		list->head->info = info;
 		list->head->next = NULL;
@@ -37,24 +37,32 @@ int ll_add_node(List *list, TreeNode *info) {
 	return 1;
 }
 
-ListNode *ll_remove_node(List *list, TreeNode *info) {
+ListNode *ll_remove_node(List *list, char *node_name) {
 
-	if(!list) {
+	if (!list) {
 		fprintf(stderr, "No list :(");
 		return NULL;
 	}
 
-	if(!list->head) {
+	if (!list->head) {
 		return NULL;
 	}
 
-	ListNode *curr = list->head;
-	ListNode *prev = list->head;
+	if (!list->head->next) {
+		ListNode *curr = list->head;
+		list->head = NULL;
+		return curr;
+	}
 
-	while(curr) {
-		if(curr->info == info) {
-			ListNode *next = curr->next;
-			prev->next = next;
+	ListNode *curr = list->head;
+	ListNode *prev = NULL;
+
+	while (curr) {
+		if (!strcmp(curr->info->name, node_name)) {
+			if (prev)
+				prev->next = curr->next;
+			else
+				list->head = curr->next;
 			return curr;
 		}
 		prev = curr;
@@ -66,13 +74,13 @@ ListNode *ll_remove_node(List *list, TreeNode *info) {
 
 void ll_print(List *list) {
 
-	if(!list) {
+	if (!list) {
 		fprintf(stderr, "No list :(");
 		return;
 	}
 
 	ListNode *curr = list->head;
-	while(curr) {
+	while (curr) {
 		printf("%s\n", curr->info->name);
 		curr = curr->next;
 	}
@@ -80,16 +88,33 @@ void ll_print(List *list) {
 
 ListNode *ll_search(List *list, char *node) {
 
-	if(!list) {
+	if (!list) {
 		fprintf(stderr, "No list :(");
 		return NULL;
 	}
 	ListNode *curr = list->head;
-	while(curr) {
-		if(!strcmp(curr->info->name, node)) {
+	while (curr) {
+		if (!strcmp(curr->info->name, node)) {
 			return curr;
 		}
 		curr = curr->next;
 	}
 	return NULL;
+}
+
+void ll_free(List *list) {
+	if (!list) {
+		fprintf(stderr, "No list :(");
+		return;
+	}
+
+	ListNode *curr = list->head;
+	while (curr) {
+		ListNode *aux = curr;
+		curr = curr->next;
+		free(aux->info);
+		free(aux);
+	}
+
+	list->head = NULL;
 }
