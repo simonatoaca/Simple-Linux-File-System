@@ -37,7 +37,7 @@ void freeTree(FileTree fileTree) {
 
 void ls(TreeNode* currentNode, char* arg) {
 
-    if (!currentNode) {
+   if (!currentNode) {
 		fprintf(stderr, "No current node :(");
 		return;
 	}
@@ -49,7 +49,13 @@ void ls(TreeNode* currentNode, char* arg) {
 	}
 
 	ListNode *curr = ll_search(curr_list, arg);
-	if (curr) {
+
+	if (curr->info->type == FILE_NODE) {
+		printf("%s\n", ((FileContent *) curr->info->content)->text);
+		return;
+	}
+
+	if (curr->info->type == FOLDER_NODE) {
 		curr_list = ((FolderContent *)curr->info->content)->children;
 		ll_print(curr_list);
 		return;
@@ -200,6 +206,7 @@ void touch(TreeNode* currentNode, char* fileName, char* fileContent) {
 		fprintf(stderr, "No current node :(");
 		return;
 	}
+
 	List *curr = ((FolderContent *)(currentNode->content))->children;
 	TreeNode *info = calloc(1, sizeof(*info));
 	info->parent = currentNode;
@@ -207,7 +214,10 @@ void touch(TreeNode* currentNode, char* fileName, char* fileContent) {
 	info->type = FILE_NODE;
 
 	if (fileContent) {
-		info->content = strdup(fileContent);
+		info->content = calloc(1, sizeof(FileContent));
+		((FileContent *)info->content)->text = strdup(fileContent);
+	} else {
+		info->content = NULL;
 	}
 
 	if (!ll_add_node(curr, info)) {
