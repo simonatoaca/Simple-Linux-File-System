@@ -37,7 +37,7 @@ void freeTree(FileTree fileTree) {
 
 void ls(TreeNode* currentNode, char* arg) {
 
-   if (!currentNode) {
+    if (!currentNode) {
 		fprintf(stderr, "No current node :(");
 		return;
 	}
@@ -51,7 +51,7 @@ void ls(TreeNode* currentNode, char* arg) {
 	ListNode *curr = ll_search(curr_list, arg);
 
 	if (curr->info->type == FILE_NODE) {
-		printf("%s\n", ((FileContent *) curr->info->content)->text);
+		printf("%s: %s\n",curr->info->name , ((FileContent *) curr->info->content)->text);
 		return;
 	}
 
@@ -60,6 +60,7 @@ void ls(TreeNode* currentNode, char* arg) {
 		ll_print(curr_list);
 		return;
 	}
+
 }
 
 
@@ -79,28 +80,25 @@ void pwd(TreeNode* treeNode) {
 }
 
 
-TreeNode *cd(TreeNode *currentNode, char *path) {
+TreeNode* cd(TreeNode* currentNode, char* path) {
+
 	TreeNode *next_dir = currentNode;
 	List *curr_list = ((FolderContent *)(currentNode->content))->children;
-
-	// Because the string pointer is modified by strtok
-	char *aux_path = strdup(path);
-	char *next_directory = strtok(aux_path, "/");
+	char *path_name = path;
+	char *next_directory = strtok(path, "/");
 
 	while (next_directory) {
 		if (!strcmp(next_directory, PARENT_DIR)) {
 			next_dir = next_dir->parent;
 			if (!next_dir) {
-				free(aux_path);
 				return currentNode;
-			}
+			}	
 		} else {
 			ListNode *child = ll_search(curr_list, next_directory);
-			if (child && child->info->type == FOLDER_NODE) {
+			if (child) {
 				next_dir = child->info;
 			} else {
-				printf("cd: no such file or directory: %s", path);
-				free(aux_path);
+				printf("cd: no such file or directory: %s", path_name);
 				return currentNode;
 			}
 		}
@@ -108,7 +106,6 @@ TreeNode *cd(TreeNode *currentNode, char *path) {
 		next_directory = strtok(NULL, "/");
 	}
 
-	free(aux_path);
 	return next_dir;
 }
 
@@ -118,7 +115,7 @@ void tree(TreeNode* currentNode, char* arg) {
 }
 
 
-void mkdir(TreeNode *currentNode, char *folderName) {
+void mkdir(TreeNode* currentNode, char* folderName) {
 
     if (!currentNode) {
 		fprintf(stderr, "No current node :(");
@@ -143,7 +140,7 @@ void mkdir(TreeNode *currentNode, char *folderName) {
 }
 
 
-void rmrec(TreeNode *currentNode, char *resourceName) {
+void rmrec(TreeNode* currentNode, char* resourceName) {
     List *list = ((FolderContent *)(currentNode->content))->children;
     ListNode *removed_node = ll_search(list, resourceName);
 	if (!removed_node) {
@@ -166,7 +163,7 @@ void rmrec(TreeNode *currentNode, char *resourceName) {
 }
 
 
-void rm(TreeNode *currentNode, char *fileName) {
+void rm(TreeNode* currentNode, char* fileName) {
 	List *list = ((FolderContent *)(currentNode->content))->children;
     ListNode *removed_node = ll_search(list, fileName);
 	if (!removed_node) {
@@ -185,7 +182,8 @@ void rm(TreeNode *currentNode, char *fileName) {
 }
 
 
-void rmdir(TreeNode *currentNode, char *folderName) {
+void rmdir(TreeNode* currentNode, char* folderName) {
+
     List *list = ((FolderContent *)(currentNode->content))->children;
     ListNode *removed_node = ll_search(list, folderName);
 	if (!removed_node) {
@@ -209,7 +207,7 @@ void rmdir(TreeNode *currentNode, char *folderName) {
 }
 
 
-void touch(TreeNode *currentNode, char *fileName, char *fileContent) {
+void touch(TreeNode* currentNode, char* fileName, char* fileContent) {
 	if (!currentNode) {
 		fprintf(stderr, "No current node :(");
 		return;
@@ -236,103 +234,33 @@ void touch(TreeNode *currentNode, char *fileName, char *fileContent) {
 	}
 }
 
-int get_source_info(TreeNode *currentNode, ListNode *source_node, char *source,
-				  char **file_name, char **file_content) {
-	if (source_node) {
-		if (source_node->info->type == FOLDER_NODE) {
-			printf("cp: -r not specified; omitting directory '%s'", source);
-			return 0;
-		}
 
-		// The source is in the current dir and is a file
-		*file_name = strdup(source_node->info->name);
-		*file_content = strdup(((FileContent *)source_node->info->content)->text);
-	} else {
-		*file_name = strrchr(source, '/');
-		int len = strlen(*file_name);
-		char *truncated_path = malloc(strlen(*file_name) - len + 1);
-		strncpy(truncated_path, source, strlen(source) - len);
+void cp(TreeNode* currentNode, char* source, char* destination) {
 
-		TreeNode *path = cd(currentNode, truncated_path);
-		List *list = ((FolderContent *)(path->content))->children;
-		ListNode *file = ll_search(list, *file_name);
+	TreeNode *source_node = cd(currentNode, source);
+	TreeNode *destination_node = cd(currentNode, destination);
 
-		if (file && file->info->type == FOLDER_NODE) {
-			printf("cp: -r not specified; omitting directory '%s'", source);
-			free(truncated_path);
-			return 0;
-		}
-
-		*file_name = strdup(file->info->name);
-		*file_content = strdup(((FileContent *)file->info->content)->text);
-		free(truncated_path);
-	}
-
-	return 1;
-}
-
-void cp(TreeNode *currentNode, char *source, char *destination) {
-	char *file_name = NULL, *file_content = NULL;
-	// Because it is modified by strtok
-	char *aux_dest = strdup(destination);
-
-	// Check if the source is in the current dir
-	List *list = ((FolderContent *)(currentNode->content))->children;
-	ListNode *source_node = ll_search(list, source);
-	
-	if (!get_source_info(currentNode, source_node, source, &file_name, &file_content)) {
-		free(aux_dest);
+	if (source_node->type == FOLDER_NODE) {
+		printf("cp: -r not specified; omitting directory '%s'\n", source);
 		return;
 	}
 
-	// Flag to see if the cp has been done -> free aux strings
-	int done_cp = 0;
-
-	TreeNode *next_dir = currentNode;
-	list = ((FolderContent *)(currentNode->content))->children;
-	char *next_directory = strtok(aux_dest, "/");
-
-	while (next_directory) {
-		if (!strcmp(next_directory, PARENT_DIR)) {
-			next_dir = next_dir->parent;
-			if (!next_dir)	{
-				printf("cp: failed to access '%s': Not a directory", destination);
-				done_cp = 1;
-				break;
-			}
-		} else {
-			ListNode *child = ll_search(list, next_directory);
-			if (!child) {
-				printf("cp: failed to access '%s': Not a directory", destination);
-				done_cp = 1;
-				break;
-			}
-
-			if (child->info->type == FOLDER_NODE) {
-				next_dir = child->info;
-			} else {
-				// The destination is a file -> replacing its content
-				if (((FileContent *)child->info->content)->text)
-					free(((FileContent *)child->info->content)->text);
-				((FileContent *)child->info->content)->text = strdup(file_content);
-
-				done_cp = 1;
-				break;
-			}
-		}
-		list = ((FolderContent *)next_dir->content)->children;
-		next_directory = strtok(NULL, "/");
+	if(destination_node == NULL) {
+		printf("cp: failed to access '%s': Not a directory", destination);
+		return;
 	}
 
-	if (!done_cp) {
-		// Create new file identical to the source:
-		touch(next_dir, file_name, file_content);
-	}
+	if(destination_node->type == FILE_NODE) {
+		((FileContent *)destination_node->content)->text =
+		((FileContent *)source_node->content)->text;
+		return;
+	} else {
+		List *list = ((FolderContent *)(destination_node->content))->children;
 
-	free(aux_dest);
-	free(file_content);
-	free(file_name);
-}	
+		ll_add_node(list, source_node);
+		return;
+	}
+}
 
 void mv(TreeNode* currentNode, char* source, char* destination) {
     // TODO
