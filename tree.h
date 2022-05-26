@@ -56,5 +56,5 @@ void touch(TreeNode* currentNode, char* fileName, char* fileContent);
 void cp(TreeNode* currentNode, char* source, char* destination);
 void mv(TreeNode* currentNode, char* source, char* destination);
 FileTree *createFileTree(char* rootFolderName);
-void freeTree(FileTree fileTree);
+void freeTree(FileTree *fileTree);
 TreeNode* move_to(TreeNode* currentNode, char* path);

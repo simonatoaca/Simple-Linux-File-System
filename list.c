@@ -1,5 +1,21 @@
 #include "list.h"
 
+void custom_free(ListNode *curr) {
+	if (curr->info->type == FILE_NODE)
+		free(((FileContent *)curr->info->content)->text);
+	else
+		ll_free(((FolderContent *)curr->info->content)->children, custom_free);
+	
+	if (curr && curr->info && curr->info->content)
+		free(curr->info->content);
+	if (curr && curr->info) {
+		free(curr->info->name);
+		free(curr->info);
+		free(curr);
+	}
+}
+
+
 List *ll_create() {
 	List *list = malloc(sizeof(*list));
 	if (!list) {
@@ -19,13 +35,6 @@ int ll_add_node(List *list, TreeNode *info) {
 
 	if (ll_search(list, info->name)) {
 		return 0;
-	}
-
-	if (!list->head) {
-		list->head = calloc(1, sizeof(ListNode));
-		list->head->info = info;
-		list->head->next = NULL;
-		return 1;
 	}
 
 	ListNode *next = list->head;
@@ -102,7 +111,7 @@ ListNode *ll_search(List *list, char *node) {
 	return NULL;
 }
 
-void ll_free(List *list) {
+void ll_free(List *list, void(*free_data)(ListNode *)) {
 	if (!list) {
 		fprintf(stderr, "No list :(");
 		return;
@@ -112,9 +121,8 @@ void ll_free(List *list) {
 	while (curr) {
 		ListNode *aux = curr;
 		curr = curr->next;
-		free(aux->info);
-		free(aux);
+		free_data(aux);
 	}
 
-	list->head = NULL;
+	free(list);	
 }

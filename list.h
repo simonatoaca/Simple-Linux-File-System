@@ -3,9 +3,10 @@
 #include <string.h>
 #include "tree.h"
 
+void custom_free(ListNode *curr);
 List *ll_create();
 int ll_add_node(List *list, TreeNode *info);
 ListNode *ll_remove_node(List *list, char *node_name);
 void ll_print(List *list);
 ListNode *ll_search(List *list, char *node);
-void ll_free(List *list);
+void ll_free(List *list, void(*free_data)(ListNode *));
