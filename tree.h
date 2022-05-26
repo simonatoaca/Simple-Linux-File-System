@@ -58,4 +58,3 @@ void mv(TreeNode* currentNode, char* source, char* destination);
 FileTree *createFileTree(char* rootFolderName);
 void freeTree(FileTree fileTree);
 TreeNode* move_to(TreeNode* currentNode, char* path);
-
