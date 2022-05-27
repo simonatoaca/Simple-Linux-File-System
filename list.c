@@ -5,7 +5,7 @@ void custom_free(ListNode *curr) {
 		free(((FileContent *)curr->info->content)->text);
 	else
 		ll_free(((FolderContent *)curr->info->content)->children, custom_free);
-	
+
 	if (curr && curr->info && curr->info->content)
 		free(curr->info->content);
 	if (curr && curr->info) {
@@ -27,7 +27,6 @@ List *ll_create() {
 }
 
 int ll_add_node(List *list, TreeNode *info) {
-
 	if (!list) {
 		fprintf(stderr, "No list :(");
 		return 0;
@@ -47,7 +46,6 @@ int ll_add_node(List *list, TreeNode *info) {
 }
 
 ListNode *ll_remove_node(List *list, char *node_name) {
-
 	if (!list) {
 		fprintf(stderr, "No list :(");
 		return NULL;
@@ -82,7 +80,6 @@ ListNode *ll_remove_node(List *list, char *node_name) {
 }
 
 void ll_print(List *list) {
-
 	if (!list) {
 		fprintf(stderr, "No list :(");
 		return;
@@ -96,7 +93,6 @@ void ll_print(List *list) {
 }
 
 ListNode *ll_search(List *list, char *node) {
-
 	if (!list) {
 		fprintf(stderr, "No list :(");
 		return NULL;
@@ -124,5 +120,5 @@ void ll_free(List *list, void(*free_data)(ListNode *)) {
 		free_data(aux);
 	}
 
-	free(list);	
+	free(list);
 }

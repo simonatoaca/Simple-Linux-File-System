@@ -157,11 +157,71 @@ TreeNode* cd(TreeNode* currentNode, char* path) {
 	return next_dir;
 }
 
+void __tree_helper(TreeNode *tree_node, int *level, int *dirs, int *files) {
+	List *children = ((FolderContent *)tree_node->content)->children;
+	ListNode *curr_node = children->head;
+
+	while (curr_node) {
+		if (curr_node->info->type == FILE_NODE) {
+			(*files)++;
+			printf("%*s\n", *level * TREE_CMD_INDENT_SIZE, curr_node->info->name);
+		} else {
+			(*dirs)++;
+			printf("%*s\n", *level * TREE_CMD_INDENT_SIZE, curr_node->info->name);
+			int new_level = *level + 1;
+			__tree_helper(curr_node->info, &new_level, dirs, files);
+		}
+		curr_node = curr_node->next;
+	}
+}
+
 void tree(TreeNode* currentNode, char* arg) {
 	if (!currentNode) {
 		fprintf(stderr, "No current node :(");
 		return;
 	}
+
+	if (strcmp(arg, NO_ARG)) {
+		TreeNode *next_dir = currentNode;
+		List *curr_list = ((FolderContent *)(currentNode->content))->children;
+
+		// Because the string pointer is modified by strtok
+		char *aux_path = strdup(arg);
+		char *next_directory = strtok(aux_path, "/");
+
+		while (next_directory) {
+			if (!strcmp(next_directory, PARENT_DIR)) {
+				next_dir = next_dir->parent;
+				if (!next_dir) {
+					free(aux_path);
+					break;
+				}
+			} else {
+				ListNode *child = ll_search(curr_list, next_directory);
+				if (child) {
+					next_dir = child->info;
+					if (child->info->type == FILE_NODE) {
+						printf("%s [error opening dir]\n\n0 directories, 0 files\n", arg);
+						free(aux_path);
+						return;
+					}
+				} else {
+					printf("%s [error opening dir]\n\n0 directories, 0 files\n", arg);
+					free(aux_path);
+					return;
+				}
+			}
+			curr_list = ((FolderContent *)next_dir->content)->children;
+			next_directory = strtok(NULL, "/");
+		}
+
+		free(aux_path);
+		currentNode = next_dir;
+	}
+
+	int level = 0, dirs = 0, files = 0;
+	__tree_helper(currentNode, &level, &dirs, &files);
+	printf("%d directories, %d files\n", dirs, files);
 }
 
 void mkdir(TreeNode *currentNode, char *folderName) {
@@ -387,7 +447,7 @@ void cp(TreeNode *currentNode, char *source, char *destination) {
 void mv(TreeNode* currentNode, char* source, char* destination) {
 	List *list = ((FolderContent *)(currentNode->content))->children;
 	ListNode *source_node = ll_search(list, source);
-	
+
 	cp(currentNode, source, destination);
 	if(source_node->info->type == FOLDER_NODE) {
 		rmrec(source_node->info, source);
@@ -428,3 +488,4 @@ TreeNode* move_to(TreeNode* currentNode, char* path) {
 	free(aux_path);
 	return next_dir;
 }
+
