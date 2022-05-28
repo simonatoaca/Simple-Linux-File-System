@@ -1,7 +1,7 @@
 **Toacă Alexandra Simona & Petrache Gabriela Andreea,**
 **312CA**
 
-## Simple Linux File System - the third Data Structures Homework
+## Simple Linux File System - The Third Data Structures Homework
 
 ### Description:
 
