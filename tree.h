@@ -57,4 +57,8 @@ void cp(TreeNode* currentNode, char* source, char* destination);
 void mv(TreeNode* currentNode, char* source, char* destination);
 FileTree *createFileTree(char* rootFolderName);
 void freeTree(FileTree *fileTree);
-TreeNode* move_to(TreeNode* currentNode, char* path);
+int get_source_info(TreeNode *currentNode, ListNode *source_node, char *source,
+				  char **file_name, char **file_content);
+int get_folder_info(TreeNode *currentNode, ListNode *source_node, char *source,
+				  char **file_name, List **folder_content);
+void mv_rec(TreeNode *currentNode, char *source, char *destination);
