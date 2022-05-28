@@ -379,6 +379,7 @@ void mv(TreeNode* currentNode, char* source, char* destination) {
 		mv_rec(currentNode, source, destination);
 		rmrec(currentNode, source);
 	} else {
+		// The source is a file
 		char *file_name = NULL, *file_content = NULL;
 		// Because <destination> is modified by strtok
 		char *aux_dest = strdup(destination);
@@ -391,6 +392,7 @@ void mv(TreeNode* currentNode, char* source, char* destination) {
 			free(aux_dest);
 			return;
 		}
+		// Removes the source file after extracting its information
 		rm(source_dir->parent, file_name);
 
 		// Flag to see if the mv has been done -> free aux strings
@@ -440,4 +442,3 @@ void mv(TreeNode* currentNode, char* source, char* destination) {
 		free(aux_dest);
 	}
 }
-
