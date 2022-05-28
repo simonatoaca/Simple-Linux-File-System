@@ -93,21 +93,28 @@ int get_file_info(TreeNode *currentNode, ListNode *source_node, char *source,
 int get_folder_info(TreeNode *currentNode, ListNode *source_node, char *source,
 				  char **folder_name, List **folder_content) {
 	if(source_node) {
+		// The source folder is in the current dir
 		*folder_name = strdup(source_node->info->name);
 		*folder_content = ((FolderContent *)source_node->info->content)->children;
 	} else {
 		char *folder_name_aux = strrchr(source, '/');
 		int len = strlen(folder_name_aux);
+
+		// Get path (without the source itself)
 		char *truncated_path = calloc(1, strlen(source) - len + 1);
 		strncpy(truncated_path, source, strlen(source) - len);
 
+		// Folow the path and get the source info
 		TreeNode *parent_node = cd(currentNode, truncated_path);
 		List *list = ((FolderContent *)(parent_node->content))->children;
 		ListNode *child = ll_search(list, folder_name_aux + 1);
+
+		// Check that the source exists in the path
 		if (!child) {
 			printf("mv: failed to access '%s': Not a directory", source);
 			free(truncated_path);
 		}
+
 		*folder_name = strdup(child->info->name);
 		*folder_content = ((FolderContent *)child->info->content)->children;
 		free(truncated_path);
@@ -155,9 +162,8 @@ void mv_rec(TreeNode *currentNode, char *source, char *destination) {
 			}
 
 			if(child->info->type == FOLDER_NODE) {
+				// The next directory is a folder
 				next_dir = child->info;
-				// get content
-				list = ((FolderContent *)child->info->content)->children;
 			}
 		}
 		list = ((FolderContent *)next_dir->content)->children;
@@ -172,11 +178,17 @@ void mv_rec(TreeNode *currentNode, char *source, char *destination) {
 
 		// Copy the content of the source folder to the new one
 		ListNode *node = folder_content->head;
+		// Visit the contents of the source folder
 		while (node) {
+			// For files, copy the content
 			if(node->info->type == FILE_NODE) {
 				char *file_name = strdup(node->info->name);
 				char *file_content = strdup(((FileContent *)node->info->content)->text);
 				touch(dest_list->info, file_name, file_content);
+			} else {
+				// For folders, create a new folder
+				char *folder_name = strdup(node->info->name);
+				mkdir(dest_list->info, folder_name);
 			}
 			node = node->next;
 		}
