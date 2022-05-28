@@ -1,19 +1,5 @@
 #include "list.h"
 
-void custom_free(ListNode *curr) {
-	if (curr->info->type == FILE_NODE)
-		free(((FileContent *)curr->info->content)->text);
-	else
-		ll_free(((FolderContent *)curr->info->content)->children, custom_free);
-	if (curr && curr->info && curr->info->content)
-		free(curr->info->content);
-	if (curr && curr->info) {
-		free(curr->info->name);
-		free(curr->info);
-		free(curr);
-	}
-}
-
 List *ll_create() {
 	List *list = malloc(sizeof(*list));
 	if (!list) {
