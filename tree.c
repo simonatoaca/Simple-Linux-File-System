@@ -250,7 +250,6 @@ void mkdir(TreeNode *currentNode, char *folderName) {
 		free(info->content);
 		free(info);
 	}
-	free(folderName);
 }
 
 void rmrec(TreeNode *currentNode, char *resourceName) {
@@ -445,47 +444,166 @@ void cp(TreeNode *currentNode, char *source, char *destination) {
 }
 
 void mv(TreeNode* currentNode, char* source, char* destination) {
-	List *list = ((FolderContent *)(currentNode->content))->children;
-	ListNode *source_node = ll_search(list, source);
+	TreeNode *source_dir = cd(currentNode, source);
 
-	cp(currentNode, source, destination);
-	if(source_node->info->type == FOLDER_NODE) {
-		rmrec(source_node->info, source);
+	if(source_dir->type == FOLDER_NODE) {
+		mv_rec(currentNode, source, destination);
+		rmrec(currentNode, source);
 	} else {
-		rm(source_node->info, source);
+		char *file_name = NULL, *file_content = NULL;
+		// Because it is modified by strtok
+		char *aux_dest = strdup(destination);
+
+		// Check if the source is in the current dir
+		List *list = ((FolderContent *)(currentNode->content))->children;
+		ListNode *source_node = ll_search(list, source);
+		if (!get_source_info(currentNode, source_node, source,
+			&file_name, &file_content)) {
+			free(aux_dest);
+			return;
+		}
+		rm(source_dir->parent, file_name);
+
+		// Flag to see if the mv has been done -> free aux strings
+		int done_mv = 0;
+
+		TreeNode *next_dir = currentNode;
+		list = ((FolderContent *)(currentNode->content))->children;
+		char *next_directory = strtok(aux_dest, "/");
+
+		while (next_directory) {
+			if (!strcmp(next_directory, PARENT_DIR)) {
+				next_dir = next_dir->parent;
+				if (!next_dir)	{
+					printf("mv: failed to access '%s': Not a directory", destination);
+					done_mv = 1;
+					break;
+				}
+			} else {
+				ListNode *child = ll_search(list, next_directory);
+				if (!child) {
+					printf("mv: failed to access '%s': Not a directory", destination);
+					done_mv = 1;
+					break;
+				}
+
+				if (child->info->type == FOLDER_NODE) {
+					next_dir = child->info;
+				} else {
+					// The destination is a file -> replacing its content
+					if (((FileContent *)child->info->content)->text)
+						free(((FileContent *)child->info->content)->text);
+					((FileContent *)child->info->content)->text = strdup(file_content);
+
+					done_mv = 1;
+					break;
+				}
+			}
+			list = ((FolderContent *)next_dir->content)->children;
+			next_directory = strtok(NULL, "/");
+		}
+
+		if (!done_mv) {
+			// Create new file identical to the source:
+			touch(next_dir, file_name, file_content);
+		}
+
+		free(aux_dest);
 	}
 }
 
-// duplicat
-TreeNode* move_to(TreeNode* currentNode, char* path) {
-	TreeNode *next_dir = currentNode;
-	List *curr_list = ((FolderContent *)(currentNode->content))->children;
 
-	// Because the string pointer is modified by strtok
-	char *aux_path = strdup(path);
-	char *next_directory = strtok(aux_path, "/");
+int get_folder_info(TreeNode *currentNode, ListNode *source_node, char *source,
+				  char **folder_name, List **folder_content) {
+	if(source_node) {
+		*folder_name = strdup(source_node->info->name);
+		*folder_content = ((FolderContent *)source_node->info->content)->children;
+	} else {
+		char *folder_name_aux = strrchr(source, '/');
+		int len = strlen(folder_name_aux);
+		char *truncated_path = calloc(1, strlen(source) - len + 1);
+		strncpy(truncated_path, source, strlen(source) - len);
+
+		TreeNode *parent_node = cd(currentNode, truncated_path);
+		List *list = ((FolderContent *)(parent_node->content))->children;
+		ListNode *child = ll_search(list, folder_name_aux + 1);
+		if (!child) {
+			printf("mkdir: failed to access '%s': Not a directory", source);
+			free(truncated_path);
+		}
+		*folder_name = strdup(child->info->name);
+		*folder_content = ((FolderContent *)child->info->content)->children;
+		free(truncated_path);
+	}
+	return 1;
+}
+
+void mv_rec(TreeNode *currentNode, char *source, char *destination) {
+	char *folder_name = NULL;
+	List *folder_content = NULL;
+
+	// Because it is modified by strtok
+	char *aux_dest = strdup(destination);
+
+	// Check if the source is in the current dir
+	List *list = ((FolderContent *)(currentNode->content))->children;
+	ListNode *source_node = ll_search(list, source);
+	if (!get_folder_info(currentNode, source_node, source,
+		&folder_name, &folder_content)) {
+		free(aux_dest);
+		return;
+	}
+
+	// Flag to see if the mv has been done -> free aux strings
+	int done_mv = 0;
+
+	TreeNode *next_dir = currentNode;
+	list = ((FolderContent *)(currentNode->content))->children;
+	char *next_directory = strtok(aux_dest, "/");
 
 	while (next_directory) {
 		if (!strcmp(next_directory, PARENT_DIR)) {
 			next_dir = next_dir->parent;
-			if (!next_dir) {
-				free(aux_path);
-				return currentNode;
+			if (!next_dir)	{
+				printf("mv: failed to access '%s': Not a directory", destination);
+				done_mv = 1;
+				break;
 			}
 		} else {
-			ListNode *child = ll_search(curr_list, next_directory);
-			if (child) {
+			ListNode *child = ll_search(list, next_directory);
+			if (!child) {
+				printf("mv: failed to access '%s': Not a directory", destination);
+				done_mv = 1;
+				break;
+			}
+
+			if(child->info->type == FOLDER_NODE) {
 				next_dir = child->info;
-			} else {
-				free(aux_path);
-				return NULL;
+				// get content
+				list = ((FolderContent *)child->info->content)->children;
 			}
 		}
-		curr_list = ((FolderContent *)next_dir->content)->children;
+		list = ((FolderContent *)next_dir->content)->children;
 		next_directory = strtok(NULL, "/");
 	}
 
-	free(aux_path);
-	return next_dir;
-}
+	if (!done_mv) {
+		// Create new folder identical to the source:
+		mkdir(next_dir, folder_name);
+		ListNode *dest_list = ll_search(((FolderContent *)
+		next_dir->content)->children, folder_name);
 
+		// Copy the content of the source folder to the new one
+		ListNode *node = folder_content->head;
+		while (node) {
+			if(node->info->type == FILE_NODE) {
+				char *file_name = strdup(node->info->name);
+				char *file_content = strdup(((FileContent *)node->info->content)->text);
+				touch(dest_list->info, file_name, file_content);
+			}
+			node = node->next;
+		}
+	}
+
+	free(aux_dest);
+}
