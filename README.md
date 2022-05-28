@@ -24,4 +24,4 @@
 * This project was a great opportunity to practice working as a team.
 * It was a great experience to work together and to listen to each other's ideas and decide on the best way to implement the project.
 * We managed to expand our knowledge of C and its data structures, by implementing this simple file system.
-* One issue we struggled with is having to duplicate our code in certain sections (such as cp, mv), in order to cover all the possible error messages for each command.
+* One issue we had was having to duplicate our code in certain sections (such as cp, mv), in order to cover all the possible error messages for each command.
