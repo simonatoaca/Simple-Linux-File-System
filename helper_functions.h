@@ -43,7 +43,7 @@ int get_folder_info(TreeNode *currentNode, ListNode *source_node, char *source,
 				  char **folder_name, List **folder_content);
 
 /*
-	@brief 
+	@brief moves all the content from the source folder to the destination folder
     @param currentNode - the current directory
 	@param source - the path to the source folder
 	@param destination - the path to the destination folder
@@ -56,5 +56,3 @@ void mv_rec(TreeNode *currentNode, char *source, char *destination);
 */
 void custom_free(ListNode *curr);
 #endif
-
-
