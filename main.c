@@ -21,7 +21,7 @@ void execute_command(char *cmd, char *arg1, char *arg2) {
 }
 
 TreeNode* process_command(TreeNode* currentFolder,
-        char cmd[3][TOKEN_MAX_LEN], int token_count) {
+        char cmd[3][TOKEN_MAX_LEN]) {
     execute_command(cmd[0], cmd[1], cmd[2]);
     if (!strcmp(cmd[0], LS)) {
         ls(currentFolder, cmd[1]);
@@ -73,7 +73,7 @@ int main() {
 
             token = strtok(NULL, " ");
         }
-        currentFolder = process_command(currentFolder, cmd, token_idx);
+        currentFolder = process_command(currentFolder, cmd);
     }
 
     freeTree(fileTree);
