@@ -461,7 +461,8 @@ void mv(TreeNode* currentNode, char* source, char* destination) {
 			&file_name, &file_content)) {
 			free(aux_dest);
 			return;
-		}	
+		}
+		rm(source_dir->parent, file_name);
 
 		// Flag to see if the mv has been done -> free aux strings
 		int done_mv = 0;
@@ -502,11 +503,9 @@ void mv(TreeNode* currentNode, char* source, char* destination) {
 			next_directory = strtok(NULL, "/");
 		}
 
-		if (done_mv) {
+		if (!done_mv) {
 			// Create new file identical to the source:
 			touch(next_dir, file_name, file_content);
-			//free the source file
-			rm(next_dir, source);
 		}
 
 		free(aux_dest);
